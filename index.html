@@ -1,95 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Interview Pro System</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-display:flex;justify-content:center;align-items:center;
-height:100vh;color:white;
-}
-.container{
-width:95%;max-width:950px;background:rgba(0,0,0,0.9);
-padding:35px;border-radius:18px;
-box-shadow:0 0 40px rgba(0,255,255,0.3);
-}
-h1{text-align:center;margin-bottom:20px;}
-.top{display:flex;justify-content:space-between;align-items:center;}
-select{padding:10px;border-radius:8px;border:none;}
-.timer{font-weight:600;color:#00ffcc;}
-.question{margin-top:20px;font-size:18px;min-height:60px;}
-textarea{width:100%;margin-top:15px;padding:12px;border-radius:8px;border:none;}
-button{margin-top:15px;padding:12px;width:100%;border:none;border-radius:8px;background:#00c6ff;font-weight:600;cursor:pointer;}
-button:hover{background:#00ffcc;}
-.result{margin-top:15px;padding:12px;border-radius:8px;}
-.score{margin-top:10px;font-weight:600;}
-.progress-bar{height:8px;background:#333;border-radius:10px;margin-top:8px;overflow:hidden;}
-.progress{height:100%;width:0%;background:#00ffcc;transition:0.3s;}
-</style>
-</head>
-<body>
-
-<div class="container">
-<h1>AI Interview Pro</h1>
-
-<div class="top">
-<select id="roleSelect">
-<option value="Software Engineer">Software Engineer</option>
-<option value="Data Scientist">Data Scientist</option>
-<option value="Cloud Engineer">Cloud Engineer</option>
-<option value="Cyber Security Analyst">Cyber Security Analyst</option>
-<option value="HR Manager">HR Manager</option>
-<option value="Business Analyst">Business Analyst</option>
-<option value="AI/ML Engineer">AI/ML Engineer</option>
-<option value="Digital Marketing Manager">Digital Marketing Manager</option>
-</select>
-<div class="timer" id="timer">Time: 60s</div>
-</div>
-
-<button onclick="startInterview()">Start Interview</button>
-<div class="question" id="questionBox"></div>
-
-<textarea id="answerBox" rows="4" placeholder="Your answer (or use microphone)..."></textarea>
-
-<button onclick="startRecording()">🎤 Speak Answer</button>
-<button onclick="submitAnswer()">Submit Answer</button>
-
-<div class="result" id="resultBox"></div>
-<div class="score" id="scoreBoard"></div>
-<div class="progress-bar"><div class="progress" id="progress"></div></div>
-
-</div>
-
 <script>
 let timer,timeLeft=60,score=0,total=0,used=[],current=null,dismissed=false;
 
+/* 🔥 COMPLETE INTERVIEW QUESTION BANK */
 const questionBank={
-"Cloud Engineer":[
-{q:"Explain IaaS PaaS SaaS.",k:["iaas","paas","saas","infrastructure","platform","software"]},
-{q:"What is load balancing?",k:["traffic","server","distribution"]},
-{q:"How do you handle deadlines?",k:["time","management","priority"]},
-{q:"Describe a cloud project.",k:["deployment","service","architecture"]}
-],
+
 "Software Engineer":[
 {q:"Explain OOPS principles.",k:["encapsulation","inheritance","polymorphism","abstraction"]},
 {q:"What is REST API?",k:["api","http","client","server"]},
-{q:"Describe a challenging project.",k:["project","challenge","solution"]},
-{q:"How do you handle deadlines?",k:["time","management","priority"]}
+{q:"Explain multithreading.",k:["thread","parallel","process"]},
+{q:"How do you handle deadlines?",k:["time","priority","management"]},
+{q:"Tell me about yourself.",k:["experience","skills","education"]}
+],
+
+"Data Scientist":[
+{q:"What is overfitting?",k:["model","training","test"]},
+{q:"Explain bias vs variance.",k:["bias","variance"]},
+{q:"What is regression?",k:["prediction","model","data"]},
+{q:"Describe your ML project.",k:["model","data","result"]},
+{q:"Why Data Science?",k:["analysis","data","insight"]}
+],
+
+"Cloud Engineer":[
+{q:"What is cloud computing?",k:["cloud","internet","server"]},
+{q:"Explain IaaS PaaS SaaS.",k:["iaas","paas","saas"]},
+{q:"What is load balancing?",k:["traffic","server","distribution"]},
+{q:"How do you manage failures?",k:["backup","recovery"]},
+{q:"Describe your cloud project.",k:["deployment","service"]}
+],
+
+"Cyber Security":[
+{q:"What is phishing?",k:["attack","email","fraud"]},
+{q:"Explain firewall.",k:["network","security","filter"]},
+{q:"What is encryption?",k:["data","security","key"]},
+{q:"How to secure web apps?",k:["authentication","validation","security"]},
+{q:"How do you handle breaches?",k:["incident","response","recovery"]}
+],
+
+"Digital Marketing":[
+{q:"What is SEO?",k:["search","engine","optimization"]},
+{q:"Explain social media strategy.",k:["content","audience","engagement"]},
+{q:"What is PPC?",k:["ads","click","campaign"]},
+{q:"How do you measure campaign success?",k:["analytics","roi","conversion"]},
+{q:"Why marketing?",k:["brand","growth","customer"]}
+],
+
+"HR Manager":[
+{q:"What is recruitment process?",k:["interview","selection","hiring"]},
+{q:"How do you resolve conflicts?",k:["communication","resolution"]},
+{q:"How do you motivate employees?",k:["motivation","team","performance"]},
+{q:"Describe leadership style.",k:["leadership","team"]},
+{q:"Why HR?",k:["people","management"]}
+],
+
+"Teacher":[
+{q:"How do you handle weak students?",k:["support","improve","guidance"]},
+{q:"What is your teaching method?",k:["interactive","learning","student"]},
+{q:"How do you manage classroom?",k:["discipline","control"]},
+{q:"Why teaching profession?",k:["education","students","passion"]},
+{q:"How do you evaluate students?",k:["assessment","performance"]}
+],
+
+"Mechanical Engineer":[
+{q:"What is thermodynamics?",k:["energy","heat","system"]},
+{q:"Explain IC engine.",k:["engine","fuel","combustion"]},
+{q:"What is CAD?",k:["design","model"]},
+{q:"Describe your project.",k:["design","implementation"]},
+{q:"Why mechanical field?",k:["machines","engineering"]}
+],
+
+"Civil Engineer":[
+{q:"What is concrete mix ratio?",k:["cement","sand","aggregate"]},
+{q:"Explain load types in buildings.",k:["dead","live","load"]},
+{q:"What is soil testing?",k:["soil","foundation"]},
+{q:"Describe site management.",k:["planning","construction"]},
+{q:"Why civil engineering?",k:["infrastructure","construction"]}
+],
+
+"Banking":[
+{q:"What is inflation?",k:["price","increase","economy"]},
+{q:"Explain balance sheet.",k:["assets","liabilities"]},
+{q:"What is RBI role?",k:["reserve","bank","regulation"]},
+{q:"Why banking sector?",k:["finance","service"]},
+{q:"How do you handle customers?",k:["service","communication"]}
+],
+
+"Doctor":[
+{q:"What is diagnosis?",k:["disease","symptoms"]},
+{q:"How do you handle emergency cases?",k:["emergency","treatment"]},
+{q:"What is patient care?",k:["care","treatment"]},
+{q:"Why medical profession?",k:["health","service"]},
+{q:"How do you manage stress?",k:["calm","focus"]}
+],
+
+"Entrepreneur":[
+{q:"What is business model?",k:["revenue","strategy"]},
+{q:"How do you handle risks?",k:["risk","planning"]},
+{q:"Explain startup funding.",k:["investment","capital"]},
+{q:"Describe your business idea.",k:["market","solution"]},
+{q:"Why entrepreneurship?",k:["innovation","growth"]}
 ]
 };
 
-/* Start */
+/* START INTERVIEW */
 function startInterview(){
-if(dismissed){alert("You are DISMISSED");return;}
+if(dismissed){alert("You are DISMISSED ❌");return;}
 
 let role=document.getElementById("roleSelect").value;
 let list=questionBank[role];
 let available=list.filter(x=>!used.includes(x.q));
-if(available.length==0){document.getElementById("questionBox").innerHTML="Interview Completed";return;}
+
+if(available.length==0){
+document.getElementById("questionBox").innerHTML="Interview Completed ✅";
+return;
+}
 
 current=available[Math.floor(Math.random()*available.length)];
 used.push(current.q);
@@ -103,15 +126,14 @@ speakText(current.q);
 startTimer();
 }
 
-/* Voice Output */
+/* TEXT TO SPEECH */
 function speakText(text){
 let speech=new SpeechSynthesisUtterance(text);
 speech.lang="en-US";
-speech.rate=1;
 window.speechSynthesis.speak(speech);
 }
 
-/* Timer */
+/* TIMER */
 function startTimer(){
 clearInterval(timer);
 timeLeft=60;
@@ -130,9 +152,12 @@ function updateTimer(){
 document.getElementById("timer").innerHTML="Time: "+timeLeft+"s";
 }
 
-/* Microphone */
+/* MICROPHONE */
 function startRecording(){
-if(!('webkitSpeechRecognition'in window)){alert("Use Chrome");return;}
+if(!('webkitSpeechRecognition'in window)){
+alert("Use Chrome Browser");
+return;
+}
 let recognition=new webkitSpeechRecognition();
 recognition.lang="en-US";
 recognition.start();
@@ -141,7 +166,7 @@ document.getElementById("answerBox").value=event.results[0][0].transcript;
 };
 }
 
-/* Evaluate */
+/* SUBMIT & EVALUATE */
 function submitAnswer(){
 if(dismissed||!current)return;
 clearInterval(timer);
@@ -151,11 +176,11 @@ let result=document.getElementById("resultBox");
 
 if(ans.length<20){
 result.style.background="#8B0000";
-result.innerHTML="Answer too short.";
+result.innerHTML="Answer too short ❌";
 return;
 }
 
-/* Relevance */
+/* RELEVANCE CHECK */
 let match=false;
 current.k.forEach(word=>{
 if(ans.includes(word))match=true;
@@ -166,47 +191,40 @@ dismissed=true;
 result.style.background="#8B0000";
 result.innerHTML="<b>DISMISSED ❌</b><br>Answer not relevant.";
 document.getElementById("scoreBoard").innerHTML="Status: Dismissed";
-speakText("You are dismissed due to irrelevant answer.");
 return;
 }
 
-/* Grading + Feedback */
+/* GRADING + FEEDBACK */
 let grade,points,feedback;
 
 if(ans.length>180){
 grade="A+";
 points=10;
-feedback="Excellent answer with strong technical clarity and structure.";
+feedback="Outstanding answer! Strong technical depth and structured explanation.";
 }
 else if(ans.length>120){
 grade="A";
 points=8;
-feedback="Very good explanation. Add more real-world examples for perfection.";
+feedback="Very good answer. Add real-world examples for more impact.";
 }
 else if(ans.length>70){
 grade="B";
 points=6;
-feedback="Good answer but needs deeper technical detail.";
+feedback="Good attempt. Try explaining concepts more clearly.";
 }
 else{
 grade="C";
 points=4;
-feedback="Basic response. Try expanding with more explanation.";
+feedback="Basic explanation. Add more technical details.";
 }
 
 score+=points;
 
 result.style.background="#004d40";
-result.innerHTML="<b>Grade:</b> "+grade+"<br><b>Feedback:</b> "+feedback;
+result.innerHTML="<b>Grade:</b> "+grade+
+"<br><b>Feedback:</b> "+feedback;
 
 document.getElementById("scoreBoard").innerHTML=
 "Score: "+score+" | Questions: "+total;
-
-document.getElementById("progress").style.width=(total*20)+"%";
-
-speakText("Your grade is "+grade+". "+feedback);
 }
 </script>
-
-</body>
-</html>
