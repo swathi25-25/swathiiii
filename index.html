@@ -67,29 +67,22 @@ button:hover{background:#00ffcc;}
 <script>
 let timer,timeLeft=60,score=0,total=0,used=[],current=null,dismissed=false;
 
-/* Questions with Technical + HR */
 const questionBank={
+"Cloud Engineer":[
+{q:"Explain IaaS PaaS SaaS.",k:["iaas","paas","saas","infrastructure","platform","software"]},
+{q:"What is load balancing?",k:["traffic","server","distribution"]},
+{q:"How do you handle deadlines?",k:["time","management","priority"]},
+{q:"Describe a cloud project.",k:["deployment","service","architecture"]}
+],
 "Software Engineer":[
 {q:"Explain OOPS principles.",k:["encapsulation","inheritance","polymorphism","abstraction"]},
-{q:"How do you handle deadlines?",k:["time","management","priority"]},
 {q:"What is REST API?",k:["api","http","client","server"]},
-{q:"Tell me about yourself.",k:["experience","skills","education"]}
-],
-"Data Scientist":[
-{q:"What is overfitting?",k:["model","training","test"]},
-{q:"Explain bias vs variance.",k:["bias","variance"]},
-{q:"Describe your ML project.",k:["model","data","result"]},
-{q:"Why Data Science?",k:["data","analysis","insight"]}
-],
-"Cloud Engineer":[
-{q:"What is cloud computing?",k:["cloud","internet","server"]},
-{q:"Explain IaaS PaaS SaaS.",k:["iaas","paas","saas"]},
-{q:"Describe cloud project.",k:["deployment","service"]},
-{q:"How do you manage failures?",k:["backup","recovery"]}
+{q:"Describe a challenging project.",k:["project","challenge","solution"]},
+{q:"How do you handle deadlines?",k:["time","management","priority"]}
 ]
 };
 
-/* Start Interview */
+/* Start */
 function startInterview(){
 if(dismissed){alert("You are DISMISSED");return;}
 
@@ -106,11 +99,11 @@ document.getElementById("questionBox").innerHTML="<b>Question:</b> "+current.q;
 document.getElementById("answerBox").value="";
 document.getElementById("resultBox").innerHTML="";
 
-speakText(current.q);  // 🔊 Read question
+speakText(current.q);
 startTimer();
 }
 
-/* Text To Speech */
+/* Voice Output */
 function speakText(text){
 let speech=new SpeechSynthesisUtterance(text);
 speech.lang="en-US";
@@ -118,7 +111,7 @@ speech.rate=1;
 window.speechSynthesis.speak(speech);
 }
 
-/* Timer 1 Minute */
+/* Timer */
 function startTimer(){
 clearInterval(timer);
 timeLeft=60;
@@ -137,9 +130,9 @@ function updateTimer(){
 document.getElementById("timer").innerHTML="Time: "+timeLeft+"s";
 }
 
-/* Speech Recognition */
+/* Microphone */
 function startRecording(){
-if(!('webkitSpeechRecognition'in window)){alert("Use Chrome Browser");return;}
+if(!('webkitSpeechRecognition'in window)){alert("Use Chrome");return;}
 let recognition=new webkitSpeechRecognition();
 recognition.lang="en-US";
 recognition.start();
@@ -148,7 +141,7 @@ document.getElementById("answerBox").value=event.results[0][0].transcript;
 };
 }
 
-/* Submit & Evaluate */
+/* Evaluate */
 function submitAnswer(){
 if(dismissed||!current)return;
 clearInterval(timer);
@@ -162,7 +155,7 @@ result.innerHTML="Answer too short.";
 return;
 }
 
-/* Relevance Check */
+/* Relevance */
 let match=false;
 current.k.forEach(word=>{
 if(ans.includes(word))match=true;
@@ -173,26 +166,45 @@ dismissed=true;
 result.style.background="#8B0000";
 result.innerHTML="<b>DISMISSED ❌</b><br>Answer not relevant.";
 document.getElementById("scoreBoard").innerHTML="Status: Dismissed";
+speakText("You are dismissed due to irrelevant answer.");
 return;
 }
 
-/* Grading */
-let grade,points;
-if(ans.length>180){grade="A+";points=10;}
-else if(ans.length>120){grade="A";points=8;}
-else if(ans.length>70){grade="B";points=6;}
-else{grade="C";points=4;}
+/* Grading + Feedback */
+let grade,points,feedback;
+
+if(ans.length>180){
+grade="A+";
+points=10;
+feedback="Excellent answer with strong technical clarity and structure.";
+}
+else if(ans.length>120){
+grade="A";
+points=8;
+feedback="Very good explanation. Add more real-world examples for perfection.";
+}
+else if(ans.length>70){
+grade="B";
+points=6;
+feedback="Good answer but needs deeper technical detail.";
+}
+else{
+grade="C";
+points=4;
+feedback="Basic response. Try expanding with more explanation.";
+}
 
 score+=points;
+
 result.style.background="#004d40";
-result.innerHTML="<b>Grade:</b> "+grade;
+result.innerHTML="<b>Grade:</b> "+grade+"<br><b>Feedback:</b> "+feedback;
 
 document.getElementById("scoreBoard").innerHTML=
 "Score: "+score+" | Questions: "+total;
 
 document.getElementById("progress").style.width=(total*20)+"%";
 
-speakText("Your grade is "+grade);
+speakText("Your grade is "+grade+". "+feedback);
 }
 </script>
 
