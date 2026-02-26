@@ -1,9 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Mock Interview System</title>
+<style>
+body{
+font-family: Arial;
+background: linear-gradient(to right,#d7f0f7,#fdfbfb);
+text-align:center;
+padding:20px;
+}
+
+.container{
+background:white;
+padding:20px;
+border-radius:15px;
+width:70%;
+margin:auto;
+box-shadow:0 0 10px gray;
+}
+
+select,textarea,button{
+padding:10px;
+margin:10px;
+width:80%;
+border-radius:8px;
+border:1px solid gray;
+}
+
+button{
+background:#00897b;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#00695c;
+}
+
+#questionBox{
+font-size:18px;
+margin:15px;
+font-weight:bold;
+}
+
+#timer{
+color:red;
+font-weight:bold;
+}
+
+#resultBox{
+margin-top:15px;
+padding:10px;
+color:white;
+border-radius:8px;
+}
+
+#scoreBoard{
+margin-top:10px;
+font-weight:bold;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>🤖 AI Mock Interview System</h2>
+
+<select id="roleSelect">
+<option>Software Engineer</option>
+<option>Data Scientist</option>
+<option>Cloud Engineer</option>
+<option>Cyber Security</option>
+<option>Digital Marketing</option>
+<option>HR Manager</option>
+<option>Teacher</option>
+<option>Mechanical Engineer</option>
+<option>Civil Engineer</option>
+<option>Banking</option>
+<option>Doctor</option>
+<option>Entrepreneur</option>
+</select>
+
+<br>
+
+<button onclick="startInterview()">Start Question</button>
+<p id="timer">Time: 60s</p>
+
+<div id="questionBox"></div>
+
+<textarea id="answerBox" rows="5" placeholder="Your answer here..."></textarea>
+
+<br>
+<button onclick="startRecording()">🎤 Speak Answer</button>
+<button onclick="submitAnswer()">Submit</button>
+
+<div id="resultBox"></div>
+<div id="scoreBoard"></div>
+
+</div>
+
 <script>
 let timer,timeLeft=60,score=0,total=0,used=[],current=null,dismissed=false;
 
-/* 🔥 COMPLETE INTERVIEW QUESTION BANK */
 const questionBank={
-
 "Software Engineer":[
 {q:"Explain OOPS principles.",k:["encapsulation","inheritance","polymorphism","abstraction"]},
 {q:"What is REST API?",k:["api","http","client","server"]},
@@ -34,74 +135,10 @@ const questionBank={
 {q:"What is encryption?",k:["data","security","key"]},
 {q:"How to secure web apps?",k:["authentication","validation","security"]},
 {q:"How do you handle breaches?",k:["incident","response","recovery"]}
-],
-
-"Digital Marketing":[
-{q:"What is SEO?",k:["search","engine","optimization"]},
-{q:"Explain social media strategy.",k:["content","audience","engagement"]},
-{q:"What is PPC?",k:["ads","click","campaign"]},
-{q:"How do you measure campaign success?",k:["analytics","roi","conversion"]},
-{q:"Why marketing?",k:["brand","growth","customer"]}
-],
-
-"HR Manager":[
-{q:"What is recruitment process?",k:["interview","selection","hiring"]},
-{q:"How do you resolve conflicts?",k:["communication","resolution"]},
-{q:"How do you motivate employees?",k:["motivation","team","performance"]},
-{q:"Describe leadership style.",k:["leadership","team"]},
-{q:"Why HR?",k:["people","management"]}
-],
-
-"Teacher":[
-{q:"How do you handle weak students?",k:["support","improve","guidance"]},
-{q:"What is your teaching method?",k:["interactive","learning","student"]},
-{q:"How do you manage classroom?",k:["discipline","control"]},
-{q:"Why teaching profession?",k:["education","students","passion"]},
-{q:"How do you evaluate students?",k:["assessment","performance"]}
-],
-
-"Mechanical Engineer":[
-{q:"What is thermodynamics?",k:["energy","heat","system"]},
-{q:"Explain IC engine.",k:["engine","fuel","combustion"]},
-{q:"What is CAD?",k:["design","model"]},
-{q:"Describe your project.",k:["design","implementation"]},
-{q:"Why mechanical field?",k:["machines","engineering"]}
-],
-
-"Civil Engineer":[
-{q:"What is concrete mix ratio?",k:["cement","sand","aggregate"]},
-{q:"Explain load types in buildings.",k:["dead","live","load"]},
-{q:"What is soil testing?",k:["soil","foundation"]},
-{q:"Describe site management.",k:["planning","construction"]},
-{q:"Why civil engineering?",k:["infrastructure","construction"]}
-],
-
-"Banking":[
-{q:"What is inflation?",k:["price","increase","economy"]},
-{q:"Explain balance sheet.",k:["assets","liabilities"]},
-{q:"What is RBI role?",k:["reserve","bank","regulation"]},
-{q:"Why banking sector?",k:["finance","service"]},
-{q:"How do you handle customers?",k:["service","communication"]}
-],
-
-"Doctor":[
-{q:"What is diagnosis?",k:["disease","symptoms"]},
-{q:"How do you handle emergency cases?",k:["emergency","treatment"]},
-{q:"What is patient care?",k:["care","treatment"]},
-{q:"Why medical profession?",k:["health","service"]},
-{q:"How do you manage stress?",k:["calm","focus"]}
-],
-
-"Entrepreneur":[
-{q:"What is business model?",k:["revenue","strategy"]},
-{q:"How do you handle risks?",k:["risk","planning"]},
-{q:"Explain startup funding.",k:["investment","capital"]},
-{q:"Describe your business idea.",k:["market","solution"]},
-{q:"Why entrepreneurship?",k:["innovation","growth"]}
 ]
 };
 
-/* START INTERVIEW */
+/* START */
 function startInterview(){
 if(dismissed){alert("You are DISMISSED ❌");return;}
 
@@ -118,7 +155,7 @@ current=available[Math.floor(Math.random()*available.length)];
 used.push(current.q);
 total++;
 
-document.getElementById("questionBox").innerHTML="<b>Question:</b> "+current.q;
+document.getElementById("questionBox").innerHTML=current.q;
 document.getElementById("answerBox").value="";
 document.getElementById("resultBox").innerHTML="";
 
@@ -126,7 +163,7 @@ speakText(current.q);
 startTimer();
 }
 
-/* TEXT TO SPEECH */
+/* SPEAK QUESTION */
 function speakText(text){
 let speech=new SpeechSynthesisUtterance(text);
 speech.lang="en-US";
@@ -166,7 +203,7 @@ document.getElementById("answerBox").value=event.results[0][0].transcript;
 };
 }
 
-/* SUBMIT & EVALUATE */
+/* SUBMIT */
 function submitAnswer(){
 if(dismissed||!current)return;
 clearInterval(timer);
@@ -175,12 +212,11 @@ let ans=document.getElementById("answerBox").value.toLowerCase();
 let result=document.getElementById("resultBox");
 
 if(ans.length<20){
-result.style.background="#8B0000";
+result.style.background="darkred";
 result.innerHTML="Answer too short ❌";
 return;
 }
 
-/* RELEVANCE CHECK */
 let match=false;
 current.k.forEach(word=>{
 if(ans.includes(word))match=true;
@@ -188,34 +224,33 @@ if(ans.includes(word))match=true;
 
 if(!match){
 dismissed=true;
-result.style.background="#8B0000";
+result.style.background="darkred";
 result.innerHTML="<b>DISMISSED ❌</b><br>Answer not relevant.";
 document.getElementById("scoreBoard").innerHTML="Status: Dismissed";
 return;
 }
 
-/* GRADING + FEEDBACK */
 let grade,points,feedback;
 
-if(ans.length>180){
+if(ans.length>150){
 grade="A+";
 points=10;
-feedback="Outstanding answer! Strong technical depth and structured explanation.";
+feedback="Excellent explanation with strong clarity.";
 }
-else if(ans.length>120){
+else if(ans.length>100){
 grade="A";
 points=8;
-feedback="Very good answer. Add real-world examples for more impact.";
+feedback="Very good answer. Add more examples.";
 }
-else if(ans.length>70){
+else if(ans.length>60){
 grade="B";
 points=6;
-feedback="Good attempt. Try explaining concepts more clearly.";
+feedback="Good answer but needs more depth.";
 }
 else{
 grade="C";
 points=4;
-feedback="Basic explanation. Add more technical details.";
+feedback="Basic explanation. Expand more.";
 }
 
 score+=points;
@@ -228,3 +263,6 @@ document.getElementById("scoreBoard").innerHTML=
 "Score: "+score+" | Questions: "+total;
 }
 </script>
+
+</body>
+</html>
