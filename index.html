@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Interview Pro System</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+display:flex;justify-content:center;align-items:center;
+height:100vh;color:white;
+}
+.container{
+width:95%;max-width:950px;background:rgba(0,0,0,0.9);
+padding:35px;border-radius:18px;
+box-shadow:0 0 40px rgba(0,255,255,0.3);
+}
+h1{text-align:center;margin-bottom:20px;}
+.top{display:flex;justify-content:space-between;align-items:center;}
+select{padding:10px;border-radius:8px;border:none;}
+.timer{font-weight:600;color:#00ffcc;}
+.question{margin-top:20px;font-size:18px;min-height:60px;}
+textarea{width:100%;margin-top:15px;padding:12px;border-radius:8px;border:none;}
+button{margin-top:15px;padding:12px;width:100%;border:none;border-radius:8px;background:#00c6ff;font-weight:600;cursor:pointer;}
+button:hover{background:#00ffcc;}
+.result{margin-top:15px;padding:12px;border-radius:8px;}
+.score{margin-top:10px;font-weight:600;}
+.progress-bar{height:8px;background:#333;border-radius:10px;margin-top:8px;overflow:hidden;}
+.progress{height:100%;width:0%;background:#00ffcc;transition:0.3s;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>AI Interview Pro</h1>
+
+<div class="top">
+<select id="roleSelect">
+<option value="Software Engineer">Software Engineer</option>
+<option value="Data Scientist">Data Scientist</option>
+<option value="Cloud Engineer">Cloud Engineer</option>
+<option value="Cyber Security Analyst">Cyber Security Analyst</option>
+<option value="HR Manager">HR Manager</option>
+<option value="Business Analyst">Business Analyst</option>
+<option value="AI/ML Engineer">AI/ML Engineer</option>
+<option value="Digital Marketing Manager">Digital Marketing Manager</option>
+</select>
+<div class="timer" id="timer">Time: 60s</div>
+</div>
+
+<button onclick="startInterview()">Start Interview</button>
+<div class="question" id="questionBox"></div>
+
+<textarea id="answerBox" rows="4" placeholder="Your answer (or use microphone)..."></textarea>
+
+<button onclick="startRecording()">🎤 Speak Answer</button>
+<button onclick="submitAnswer()">Submit Answer</button>
+
+<div class="result" id="resultBox"></div>
+<div class="score" id="scoreBoard"></div>
+<div class="progress-bar"><div class="progress" id="progress"></div></div>
+
+</div>
+
+<script>
+let timer,timeLeft=60,score=0,total=0,used=[],current=null,dismissed=false;
+
+/* Questions with Technical + HR */
+const questionBank={
+"Software Engineer":[
+{q:"Explain OOPS principles.",k:["encapsulation","inheritance","polymorphism","abstraction"]},
+{q:"How do you handle deadlines?",k:["time","management","priority"]},
+{q:"What is REST API?",k:["api","http","client","server"]},
+{q:"Tell me about yourself.",k:["experience","skills","education"]}
+],
+"Data Scientist":[
+{q:"What is overfitting?",k:["model","training","test"]},
+{q:"Explain bias vs variance.",k:["bias","variance"]},
+{q:"Describe your ML project.",k:["model","data","result"]},
+{q:"Why Data Science?",k:["data","analysis","insight"]}
+],
+"Cloud Engineer":[
+{q:"What is cloud computing?",k:["cloud","internet","server"]},
+{q:"Explain IaaS PaaS SaaS.",k:["iaas","paas","saas"]},
+{q:"Describe cloud project.",k:["deployment","service"]},
+{q:"How do you manage failures?",k:["backup","recovery"]}
+]
+};
+
+/* Start Interview */
+function startInterview(){
+if(dismissed){alert("You are DISMISSED");return;}
+
+let role=document.getElementById("roleSelect").value;
+let list=questionBank[role];
+let available=list.filter(x=>!used.includes(x.q));
+if(available.length==0){document.getElementById("questionBox").innerHTML="Interview Completed";return;}
+
+current=available[Math.floor(Math.random()*available.length)];
+used.push(current.q);
+total++;
+
+document.getElementById("questionBox").innerHTML="<b>Question:</b> "+current.q;
+document.getElementById("answerBox").value="";
+document.getElementById("resultBox").innerHTML="";
+
+speakText(current.q);  // 🔊 Read question
+startTimer();
+}
+
+/* Text To Speech */
+function speakText(text){
+let speech=new SpeechSynthesisUtterance(text);
+speech.lang="en-US";
+speech.rate=1;
+window.speechSynthesis.speak(speech);
+}
+
+/* Timer 1 Minute */
+function startTimer(){
+clearInterval(timer);
+timeLeft=60;
+updateTimer();
+timer=setInterval(()=>{
+timeLeft--;
+updateTimer();
+if(timeLeft<=0){
+clearInterval(timer);
+submitAnswer();
+}
+},1000);
+}
+
+function updateTimer(){
+document.getElementById("timer").innerHTML="Time: "+timeLeft+"s";
+}
+
+/* Speech Recognition */
+function startRecording(){
+if(!('webkitSpeechRecognition'in window)){alert("Use Chrome Browser");return;}
+let recognition=new webkitSpeechRecognition();
+recognition.lang="en-US";
+recognition.start();
+recognition.onresult=function(event){
+document.getElementById("answerBox").value=event.results[0][0].transcript;
+};
+}
+
+/* Submit & Evaluate */
+function submitAnswer(){
+if(dismissed||!current)return;
+clearInterval(timer);
+
+let ans=document.getElementById("answerBox").value.toLowerCase();
+let result=document.getElementById("resultBox");
+
+if(ans.length<20){
+result.style.background="#8B0000";
+result.innerHTML="Answer too short.";
+return;
+}
+
+/* Relevance Check */
+let match=false;
+current.k.forEach(word=>{
+if(ans.includes(word))match=true;
+});
+
+if(!match){
+dismissed=true;
+result.style.background="#8B0000";
+result.innerHTML="<b>DISMISSED ❌</b><br>Answer not relevant.";
+document.getElementById("scoreBoard").innerHTML="Status: Dismissed";
+return;
+}
+
+/* Grading */
+let grade,points;
+if(ans.length>180){grade="A+";points=10;}
+else if(ans.length>120){grade="A";points=8;}
+else if(ans.length>70){grade="B";points=6;}
+else{grade="C";points=4;}
+
+score+=points;
+result.style.background="#004d40";
+result.innerHTML="<b>Grade:</b> "+grade;
+
+document.getElementById("scoreBoard").innerHTML=
+"Score: "+score+" | Questions: "+total;
+
+document.getElementById("progress").style.width=(total*20)+"%";
+
+speakText("Your grade is "+grade);
+}
+</script>
+
+</body>
+</html>
